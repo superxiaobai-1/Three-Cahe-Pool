@@ -16,8 +16,8 @@ public:
     static ThreadCache* GetThreadCache() {
         if (!thread_local_data_) {
             // thread_local_data_ = new ThreadCache();
-			static ObjectPool<ThreadCache> tcPool;
-			thread_local_data_ = tcPool.New();
+            thread_local static ObjectPool<ThreadCache> tcPool;
+            thread_local_data_ = tcPool.New();
         }
         return thread_local_data_;
     }
