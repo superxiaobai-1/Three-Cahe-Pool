@@ -9,18 +9,21 @@ set(CMAKE_BUILD_TYPE Debug)
 
 # 禁用优化
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
+include_directories(${CMAKE_SOURCE_DIR}/include)
 
 set(SOURCES
-    CentralCache.cpp
-    PageCache.cpp
-    thread_cache.cpp
-    UnitTest.cpp
-    Benchmark.cpp
+    source/CentralCache.cpp
+    source/PageCache.cpp
+    source/thread_cache.cpp
+    bench/UnitTest.cpp
+    bench/Benchmark.cpp
 )
 
-include_directories(${CMAKE_SOURCE_DIR})
+add_library(tc_pool SHARED ${SOURCES})
 
-add_executable(tc_malloc11 ${SOURCES})
+target_link_libraries(tc_pool PRIVATE pthread)
 
-# 链接 pthread 库
-target_link_libraries(tc_malloc11 PRIVATE pthread)
+add_subdirectory(bench)
+
+install(TARGETS tc_pool
+        DESTINATION ${CMAKE_SOURCE_DIR}/build/lib)
