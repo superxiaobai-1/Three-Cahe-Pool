@@ -19,15 +19,24 @@ inline static void SystemFree(void* ptr, size_t kpage) {
 }
 
 // 自由链表节点结构体
-template<class T>
-struct FreeListNode {
-    T object;                   // 实际对象
-    FreeListNode* next_ = nullptr; // 指向下一个节点的指针
+template <class T>
+struct alignas(alignof(T)) FreeListNode {
+  T object;                       // 实际对象
+  FreeListNode* next_ = nullptr;  // 指向下一个节点的指针
 };
 
 template<class T>
 class ObjectPool {
 public:
+ ObjectPool(size_t initial_size = 128 * 1024) : remain_bytes_(initial_size) {
+   memory_ = (char*)SystemAlloc(remain_bytes_ >> 13);
+ }
+
+ ~ObjectPool() {
+   if (memory_) {
+     SystemFree(memory_, remain_bytes_ >> 13);
+   }
+ }
     T* New() {
         T* obj = nullptr;
         if (free_list_) {
@@ -45,7 +54,6 @@ public:
           remain_bytes_ -= sizeof(FreeListNode<T>);
         }
 
-        // 使用 placement new 调用构造函数初始化对象
         new(obj) T;
         return obj;
     }
